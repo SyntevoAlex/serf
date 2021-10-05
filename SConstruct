@@ -641,7 +641,7 @@ else:
 check_script = env.File('build/check.py').rstr()
 test_dir = env.File('test/test_all.c').rfile().get_dir()
 src_dir = env.File('serf.h').rfile().get_dir()
-test_app = ("%s %s %s %s") % (sys.executable, check_script, test_dir, 'test')
+test_app = ("\"%s\" %s %s %s") % (sys.executable, check_script, test_dir, 'test')
 
 # Set the library search path for the test programs
 test_env = {'PATH' : os.environ['PATH'],
