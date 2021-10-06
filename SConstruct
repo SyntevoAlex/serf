@@ -501,29 +501,56 @@ else:
 
 # Check for OpenSSL functions which are only available in some of
 # the versions we support. Also handles forks like LibreSSL.
+# Note that 'CheckFunc' in scons has the following limitations:
+# * If header is not given, it can't detect function-like macro
+# * If header is given, and function has any arguments, it will fail
+# * If wrong header is given, it will fail on macOS 11 because implicit
+#   function declaration is considered an error there.
 conf = Configure(env)
 if conf.CheckCHeader('openssl/applink.c'):
   env.Append(CPPDEFINES=['SERF_HAVE_OPENSSL_APPLINK_C'])
-if not conf.CheckFunc('BIO_set_init', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 2 arg function;    #include <openssl/bio.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('BIO_set_init'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_BIO_WRAPPERS'])
-if not conf.CheckFunc('X509_STORE_get0_param', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg function;    #include <openssl/x509_vfy.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('X509_STORE_get0_param'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_X509_STORE_WRAPPERS'])
-if not conf.CheckFunc('X509_get0_notBefore', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg function;    #include <openssl/x509.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('X509_get0_notBefore'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_X509_GET0_NOTBEFORE'])
-if not conf.CheckFunc('X509_get0_notAfter', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg function;    #include <openssl/x509.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('X509_get0_notAfter'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_X509_GET0_NOTAFTER'])
-if not conf.CheckFunc('X509_STORE_CTX_get0_chain', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg function;    #include <openssl/x509_vfy.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('X509_STORE_CTX_get0_chain'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_X509_GET0_CHAIN'])
-if not conf.CheckFunc('ASN1_STRING_get0_data', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg function;    #include <openssl/asn1.h>
+# OpenSSL 1.0: Missing
+if not conf.CheckFunc('ASN1_STRING_get0_data'):
   env.Append(CPPDEFINES=['SERF_NO_SSL_ASN1_STRING_GET0_DATA'])
-if conf.CheckFunc('CRYPTO_set_locking_callback', '#include <openssl/crypto.h>'):
+# OpenSSL 1.1: 1 arg empty macro; #include <openssl/crypto.h>
+# OpenSSL 1.0: 1 arg function;    #include <openssl/crypto.h>
+if conf.CheckFunc('CRYPTO_set_locking_callback'):
   env.Append(CPPDEFINES=['SERF_HAVE_SSL_LOCKING_CALLBACKS'])
+# OpenSSL 1.1: 0 arg empty macro; #include <openssl/crypto.h>
+# OpenSSL 1.0: Missing
 if conf.CheckFunc('OPENSSL_malloc_init', '#include <openssl/crypto.h>'):
   env.Append(CPPDEFINES=['SERF_HAVE_OPENSSL_MALLOC_INIT'])
+# OpenSSL 1.1: 0 arg macro;       #include <openssl/ssl.h>; requires (OPENSSL_API_COMPAT < 0x10100000)
+# OpenSSL 1.0: 0 arg function;    #include <openssl/ssl.h>
 if conf.CheckFunc('SSL_library_init', '#include <openssl/crypto.h>'):
   env.Append(CPPDEFINES=['SERF_HAVE_OPENSSL_SSL_LIBRARY_INIT'])
+# OpenSSL 1.1: 0 arg function;    #include <openssl/crypto.h>
+# OpenSSL 1.0: Missing
 if conf.CheckFunc('OpenSSL_version_num', '#include <openssl/crypto.h>'):
   env.Append(CPPDEFINES=['SERF_HAVE_OPENSSL_VERSION_NUM'])
+# OpenSSL 1.1: 3 arg function;    #include <openssl/ssl.h>
+# OpenSSL 1.0: 3 arg function;    #include <openssl/ssl.h>
 if conf.CheckFunc('SSL_set_alpn_protos'):
   env.Append(CPPDEFINES=['SERF_HAVE_OPENSSL_ALPN'])
 if conf.CheckType('OSSL_HANDSHAKE_STATE', '#include <openssl/ssl.h>'):
