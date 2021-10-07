@@ -559,8 +559,8 @@ env = conf.Finish()
 
 # If build with gssapi, get its information and define SERF_HAVE_GSSAPI
 if gssapi and CALLOUT_OKAY:
-    env.ParseConfig('$GSSAPI --cflags gssapi')
-    def parse_libs(env, cmd, unique=1):
+    env.ParseConfig('$GSSAPI --cflags gssapi', unique=0)
+    def parse_libs(env, cmd, unique=0):
         env['GSSAPI_LIBS'] = cmd.strip()
         return env.MergeFlags(cmd, unique)
     env.ParseConfig('$GSSAPI --libs gssapi', parse_libs)
